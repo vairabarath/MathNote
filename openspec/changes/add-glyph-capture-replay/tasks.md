@@ -42,7 +42,8 @@
 
 ## 5. Typed-input magic-loop demo (isolation harness — no recognition)
 
-- [ ] 5.1 Wire typed input (`12*8`) → deterministic solve → result string. The solve engine is a SEPARATE capability and is out of this change's scope: if it does not yet exist, **hand-feed the result string** (`96`). This is not a blocker — the honest MVP demo is typed → hand-fed `96` → replay, which still fully exercises A and B (the whole point)
-- [ ] 5.2 Feed the result string into the replay engine and render the answer in captured ink, animated
+- [x] 5.1 Wire typed input (`12*8`) → deterministic solve → result string. The solve engine is a SEPARATE capability and is out of this change's scope: if it does not yet exist, **hand-feed the result string** (`96`). This is not a blocker — the honest MVP demo is typed → hand-fed `96` → replay, which still fully exercises A and B (the whole point) — `src/demo/solve.ts` wires math.js (committed free-stack evaluator, Requirements §6) as the demo's result source, explicitly NOT the separate solve capability; `12*8→96` tested
+- [x] 5.2 Feed the result string into the replay engine and render the answer in captured ink, animated — `src/demo/MagicLoopDemo.tsx` → `AnswerInk` (animated draw-in); also surfaces the D9 gate (blocked answer glyph → route to capture) and out-of-alphabet font-fallback note; wired as the app home
 - [ ] 5.3 Validate the acceptance criterion on desktop (mouse) and iPad Safari (Apple Pencil): typed `12*8` returns `96` drawn in the user's hand. Do NOT treat this as blocked on the solve engine — with a hand-fed result it runs today
-- [ ] 5.4 Confirm A (capture) and B (replay realism) are the only variables exercised — no recognition anywhere in the path
+      → BUILT & READY (typed → math.js → replay, animated). **Awaiting human draw-through** on desktop (mouse) and iPad Safari (Apple Pencil) — same handoff pattern as §1/§3. Run `npm run dev`, complete onboarding, type `12*8`.
+- [x] 5.4 Confirm A (capture) and B (replay realism) are the only variables exercised — no recognition anywhere in the path — confirmed by construction: the path is TYPED input → math.js solve → replay; there is no recognizer (ink→expression) anywhere in the codebase. Documented in `solve.ts` and `MagicLoopDemo.tsx`.

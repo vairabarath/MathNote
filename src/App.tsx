@@ -10,6 +10,7 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import { OnboardingCapture } from './capture/OnboardingCapture'
 import { CaptureReview } from './capture/CaptureReview'
+import { MagicLoopDemo } from './demo/MagicLoopDemo'
 import { WarpSpike } from './spike/WarpSpike'
 import { getLibrary, clearLibrary } from './glyph/storage'
 import { isOnboardingComplete, type Library } from './glyph/library'
@@ -55,21 +56,15 @@ export function App() {
   }
 
   return (
-    <div style={{ maxWidth: 560, margin: '0 auto', textAlign: 'center' }}>
-      <h1 style={{ fontSize: 26, marginBottom: 6 }}>Your hand is ready ✍️</h1>
-      <p style={{ color: 'var(--muted)', lineHeight: 1.5 }}>
-        The full answer alphabet (0–9 . −) is captured. Answers will be drawn back
-        in your handwriting. The typed magic-loop demo lands in §5.
-      </p>
-      <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 20, flexWrap: 'wrap' }}>
-        <button style={primaryBtn} onClick={() => setRoute('review')}>
+    <div>
+      <MagicLoopDemo library={library} onNeedCapture={() => setRoute('review')} />
+      <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 32, flexWrap: 'wrap' }}>
+        <button style={linkBtn} onClick={() => setRoute('review')}>
           Review / edit my handwriting
         </button>
-        <button style={secondaryBtn} onClick={() => setRoute('spike')}>
-          Open warp spike (dev)
+        <button style={linkBtn} onClick={() => setRoute('spike')}>
+          Warp spike (dev)
         </button>
-      </div>
-      <div style={{ marginTop: 24 }}>
         <button
           style={linkBtn}
           onClick={async () => {
@@ -96,23 +91,6 @@ function BackBar({ onBack, label }: { onBack: () => void; label: string }) {
   )
 }
 
-const primaryBtn: CSSProperties = {
-  padding: '10px 22px',
-  fontSize: 15,
-  borderRadius: 8,
-  border: 'none',
-  background: 'var(--accent)',
-  color: '#fff',
-  cursor: 'pointer',
-}
-const secondaryBtn: CSSProperties = {
-  padding: '10px 22px',
-  fontSize: 15,
-  borderRadius: 8,
-  border: '1px solid var(--line)',
-  background: '#fff',
-  cursor: 'pointer',
-}
 const linkBtn: CSSProperties = {
   background: 'none',
   border: 'none',
