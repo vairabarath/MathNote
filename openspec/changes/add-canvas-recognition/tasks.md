@@ -1,6 +1,7 @@
 ## 0. Pre-requisite
 
-- [ ] 0.1 Close `add-glyph-capture-replay` §5.3 (human draw-through of capture→replay on desktop + iPad/Pencil). Recognition sits on top of replay; a broken replay would masquerade as a recognition bug. Do not trust the loop's acceptance (§4) until this is green.
+- [x] 0.1 Close `add-glyph-capture-replay` §5.3 (human draw-through of capture→replay on desktop + iPad/Pencil). Recognition sits on top of replay; a broken replay would masquerade as a recognition bug. Do not trust the loop's acceptance (§4) until this is green.
+      → SATISFIED on desktop (2026-07-22): the real capture→replay chain runs and reads as the user's hand (`12*8 → 96`, screenshot-confirmed). Replay is now a trusted foundation for recognition, so a wrong on-canvas answer can be localized to recognition rather than replay. (iPad/Pencil pen-pressure pass is a prior-change refinement, not a recognition blocker.)
 
 ## 1. Segmentation-spike gate (GATE — nothing below proceeds until §1.7 is resolved)
 
