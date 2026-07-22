@@ -31,13 +31,14 @@
 
 ## 4. Replay engine
 
-- [ ] 4.1 Implement pick-then-warp: random sample selection + the validated warp (§1) per glyph instance
-- [ ] 4.2 Implement neighbour-relative placement: baseline drift + size-relative-to-neighbours + advance-based spacing
-- [ ] 4.3 Implement stroke width from pressure with end-tapering
-- [ ] 4.4 Implement velocity-synthesized width for pressure-absent (mouse) samples using `t`
-- [ ] 4.5 Implement animated draw-in: render strokes progressively in capture order at a plausible/normalized pen speed
-- [ ] 4.6 Implement handwriting-web-font fallback + capture flag for uncaptured glyphs (must not trigger for a completed answer alphabet)
-- [ ] 4.7 Bake in the honest-framing note (code comment + docs): v1 warp = generic prior seeded from 3 personal anchors; personal-variance manifold-learning is a named 1.5+ upgrade
+- [x] 4.1 Implement pick-then-warp: random sample selection + the validated warp (§1) per glyph instance — `replay/layout.ts` (distinct warp seed + in-range sample pick per instance) + `replay/replay.ts` `resolveInkStrokes` (applies validated `warpSample`); tested (distinct seeds, in-range picks)
+- [x] 4.2 Implement neighbour-relative placement: baseline drift + size-relative-to-neighbours + advance-based spacing — `replay/layout.ts`: advance-metric spacing (not fixed pitch), baseline random-walk drift, per-instance size jitter; tested (advance spacing, determinism)
+- [x] 4.3 Implement stroke width from pressure with end-tapering — `replay/width.ts` `halfWidths` pressure mode; tested (varies, tapers, higher pressure → wider)
+- [x] 4.4 Implement velocity-synthesized width for pressure-absent (mouse) samples using `t` — `replay/width.ts` velocity mode (speed = dist/dt, normalized by median); tested (fast segment renders thinner, not constant)
+- [x] 4.5 Implement animated draw-in: render strokes progressively in capture order at a plausible/normalized pen speed — `replay/timeline.ts` (normalized pen speed — resolves the pacing Open Question) + `replay/AnswerInk.tsx` (rAF, per-stroke partial by arc length)
+- [x] 4.6 Implement handwriting-web-font fallback + capture flag for uncaptured glyphs (must not trigger for a completed answer alphabet) — `layout.ts` routes ONLY out-of-alphabet symbols to `font` instances + `flaggedForCapture`; answer-alphabet misses go to `blockedMissing` (never font). `replay.drawFontGlyph` renders Caveat baseline-aligned; tested (font vs blocked split)
+- [x] 4.7 Bake in the honest-framing note (code comment + docs): v1 warp = generic prior seeded from 3 personal anchors; personal-variance manifold-learning is a named 1.5+ upgrade — prominent block comment in `replay/replay.ts` and `warp/warp.ts`; also documented in README + design.md D2
+      NOTE: pipeline verified headlessly (`scripts/verify-replay.mts` → readable handwritten sequence with real pick-then-warp variation, advance spacing, drift, variable width) + 8 unit tests. Animated draw-in is visible live via the §5 demo.
 
 ## 5. Typed-input magic-loop demo (isolation harness — no recognition)
 
