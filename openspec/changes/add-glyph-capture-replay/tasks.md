@@ -22,11 +22,12 @@
 
 ## 3. Onboarding capture flow
 
-- [ ] 3.1 Build the Pointer Events capture surface preserving `pressure` and `t` per point; support mouse (pressure-absent) capture
-- [ ] 3.2 Build the first-run flow prompting for `0–9 . -`, 3 samples each, framed as the opening hook
-- [ ] 3.3 Write each captured sample through normalization (§2.2) into the library (§2.3)
-- [ ] 3.4 Add single-glyph re-capture/correction that replaces only the targeted sample
-- [ ] 3.5 Gate answer render on answer-alphabet capture completeness: block-and-route to capture for any missing answer-alphabet glyph (NOT font fallback — fallback is out-of-alphabet only, §4.6)
+- [x] 3.1 Build the Pointer Events capture surface preserving `pressure` and `t` per point; support mouse (pressure-absent) capture — `src/capture/CaptureSurface.tsx`; coalesced-event draining for pen fidelity, mouse pressure stored as `null` (flagged for velocity-width §4.4), multi-stroke, DPR-aware, pointer-capture + touch-action:none
+- [x] 3.2 Build the first-run flow prompting for `0–9 . -`, 3 samples each, framed as the opening hook — `src/capture/OnboardingCapture.tsx` ("Teach me your hand"), progress + per-glyph/per-sample prompts, Clear/Next
+- [x] 3.3 Write each captured sample through normalization (§2.2) into the library (§2.3) — on each glyph's 3rd sample: `buildGlyph` → `putGlyph`
+- [x] 3.4 Add single-glyph re-capture/correction that replaces only the targeted sample — `src/capture/CaptureReview.tsx` + `normalize.replaceSample`; tap a sample to rewrite just it (recomputes metrics, other samples/glyphs untouched)
+- [x] 3.5 Gate answer render on answer-alphabet capture completeness: block-and-route to capture for any missing answer-alphabet glyph (NOT font fallback — fallback is out-of-alphabet only, §4.6) — app-level gate in `App.tsx` (incomplete alphabet → only capture is reachable) + `classifyResultCoverage` (`glyph/library.ts`, tested) which splits missing glyphs into `blocking` (answer alphabet → route to capture) vs `fallback` (out-of-alphabet → §4.6). Render-time invocation wired in §5.
+      NOTE: §3.1/§3.2/§3.4 are interactive (pen/mouse drawing) — verified to build/typecheck; **awaiting a human draw-through in-browser** to confirm capture feel + persistence, same handoff pattern as §1.
 
 ## 4. Replay engine
 

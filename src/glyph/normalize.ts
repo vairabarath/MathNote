@@ -73,6 +73,11 @@ function metricsOf(sample: Sample): GlyphMetrics {
   }
 }
 
+/** Averaged metrics over already-normalized samples. */
+export function computeGlyphMetrics(samples: Sample[]): GlyphMetrics {
+  return averageMetrics(samples.map(metricsOf))
+}
+
 function averageMetrics(all: GlyphMetrics[]): GlyphMetrics {
   const n = all.length || 1
   const sum = all.reduce(
@@ -103,6 +108,20 @@ export function buildGlyph(
   frame: CaptureFrame,
 ): Glyph {
   const samples = rawSamples.map((s) => normalizeSample(s, frame))
-  const metrics = averageMetrics(samples.map(metricsOf))
-  return { symbol, samples, metrics }
+  return { symbol, samples, metrics: computeGlyphMetrics(samples) }
+}
+
+/**
+ * Replace a single sample of an existing glyph with newly-captured raw ink
+ * (task §3.4), recomputing metrics. Only the targeted sample changes.
+ */
+export function replaceSample(
+  glyph: Glyph,
+  index: number,
+  newRawSample: Sample,
+  frame: CaptureFrame,
+): Glyph {
+  const samples = glyph.samples.slice()
+  samples[index] = normalizeSample(newRawSample, frame)
+  return { ...glyph, samples, metrics: computeGlyphMetrics(samples) }
 }
