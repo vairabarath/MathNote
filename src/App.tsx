@@ -12,10 +12,11 @@ import { OnboardingCapture } from './capture/OnboardingCapture'
 import { CaptureReview } from './capture/CaptureReview'
 import { MagicLoopDemo } from './demo/MagicLoopDemo'
 import { WarpSpike } from './spike/WarpSpike'
+import { SegmentationSpike } from './recognition/SegmentationSpike'
 import { getLibrary, clearLibrary } from './glyph/storage'
 import { isOnboardingComplete, type Library } from './glyph/library'
 
-type Route = 'home' | 'review' | 'spike'
+type Route = 'home' | 'review' | 'spike' | 'segspike'
 
 export function App() {
   const [library, setLibrary] = useState<Library | null>(null)
@@ -33,6 +34,15 @@ export function App() {
       <div>
         <BackBar onBack={() => setRoute('home')} label="← back to app" />
         <WarpSpike />
+      </div>
+    )
+  }
+
+  if (route === 'segspike') {
+    return (
+      <div>
+        <BackBar onBack={() => setRoute('home')} label="← back to app" />
+        <SegmentationSpike />
       </div>
     )
   }
@@ -64,6 +74,9 @@ export function App() {
         </button>
         <button style={linkBtn} onClick={() => setRoute('spike')}>
           Warp spike (dev)
+        </button>
+        <button style={linkBtn} onClick={() => setRoute('segspike')}>
+          Segmentation spike (dev)
         </button>
         <button
           style={linkBtn}
