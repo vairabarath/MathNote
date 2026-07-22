@@ -31,8 +31,15 @@ When a required answer glyph (`0–9 . -`) is not captured, the system SHALL blo
 - **THEN** the system routes to capture for that glyph and does NOT substitute a font glyph
 
 ### Requirement: Recognition uncertainty is surfaced, never silently wrong
-Because the product's promise is correctness, when recognition of the expression is low-confidence or segmentation fails, the system SHALL indicate the uncertainty (e.g. show what it read, allow correction) rather than render a confidently-wrong answer.
+Because the product's promise is correctness, a **gorgeously-rendered wrong answer is the worst outcome** — it reintroduces confident-wrongness at the input end, the very thing the deterministic-solve rule forbids at the compute end. When recognition returns `unreadable` (e.g. touching multi-digit outside the supported envelope) or is low-confidence, the system SHALL surface that (show what it read / a "try spacing multi-digit numbers" hint) and SHALL NOT render an answer for input it could not confidently read.
 
-#### Scenario: An unreadable expression is not answered confidently
-- **WHEN** the written expression cannot be segmented/recognized with sufficient confidence
-- **THEN** the system surfaces what it read or that it is unsure, instead of drawing a confidently-wrong answer
+#### Scenario: Touching multi-digit is not answered with a beautiful wrong number
+- **WHEN** the written expression contains touching multi-digit the recognizer returns `unreadable` for
+- **THEN** the system shows the seam ("space out multi-digit numbers"), and does NOT draw a confidently-wrong answer in the user's hand
+
+### Requirement: The supported input envelope is legible to the user
+The system SHALL communicate the current supported envelope (single-digit operands, spaced) up front, so the boundary is known rather than discovered by getting a wrong answer.
+
+#### Scenario: The envelope is shown before failure
+- **WHEN** the user is on the canvas
+- **THEN** the supported envelope (single-digit, spaced) is indicated (hint/affordance), not left to be discovered via a misread

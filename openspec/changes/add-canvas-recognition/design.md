@@ -36,6 +36,11 @@ Whether segmentation "works" is not a solo eyeball by the builder on a cherry-pi
 
 This is why no method is pre-committed: which of these is correct is *unknown until the spike runs*.
 
+**RESOLVED (2026-07-22):** the spike ran. Naive gap-segmentation separates spaced/single-digit glyphs correctly and merges multi-stroke glyphs correctly, but merges touching/adjacent digits (evidence in tasks §1.7) — fundamental, not tunable. **Decision: Option 1** — ship free-form single-digit + spaced arithmetic now via template-matching on captured glyphs (delivers the original single-digit image end-to-end on validated replay); the multi-digit classifier is the named deferred upgrade behind the same interface (D5). Per-cell guided input was rejected: it deletes the free-form premise the product exists for.
+
+### D8 — The deferral is VISIBLE, so it needs a refusal seam
+Unlike replay's deferral (invisible — only a discerning eye notices "slightly generic" variation), this deferral is one a user *hits*: they write `15+3`, it works spaced and would misread touching. A **gorgeously-rendered wrong answer is the worst possible outcome** — it reintroduces confident-wrongness at the input end, exactly what the deterministic-solve rule forbids at the compute end. So Option 1 REQUIRES: (a) the recognizer detects unsupported input (touching multi-digit it can't segment) and returns an explicit `unreadable`/refusal rather than a confident wrong reading; (b) the supported envelope (single-digit, spaced) is legible to the user up front, not discovered via a wrong answer. This is a hard requirement of the branch, not polish. *Later trigger to revisit Option 3 (classifier):* if the demo must survive a stranger writing `12+34` on sight — an audience call, not an artifact call.
+
 ### D5 — Swappable recognizer interface (R2)
 Define `Recognizer: (ink: Stroke[]) → Token[]` (tokens = digits, operators, `=`). The canvas loop and solver depend only on this interface. Whatever wins D4 implements it; a later upgrade (classifier, or eventually 2D parsing) drops in without touching the loop. This is the concrete form of Requirements R2 ("recognition is swappable").
 
