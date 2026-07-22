@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+build/
+.output/
+.vercel/
+.netlify/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Claude Code local (keep shared commands/skills, drop local settings)
+.claude/settings.local.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/
