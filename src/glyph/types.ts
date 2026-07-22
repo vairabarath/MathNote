@@ -1,11 +1,8 @@
-// Shared ink primitives for Math Canvas.
+// Shared ink primitives + the captured-glyph data model for Math Canvas.
 //
-// This is the irreducible foundation the warp operates on. It is intentionally
-// minimal: only what the §1 warp-validation spike needs. The richer captured-
-// glyph model (Glyph { symbol, samples[3], metrics }, normalization, baseline +
-// advance) is task §2.1/§2.2 and will EXTEND these types — it will not rewrite
-// them. Keeping Point/Stroke/Sample here means the spike and the real engine
-// share one definition, so the validated warp never has to be re-ported.
+// Point/Stroke/Sample are the irreducible foundation the §1 warp operates on.
+// The captured-glyph model (Glyph, GlyphMetrics, normalization) is §2 and
+// EXTENDS these — the validated warp never had to be re-ported.
 
 /** A single captured pen sample. `pressure` is null when the device (e.g. mouse)
  *  does not report it; `t` is milliseconds relative to the start of the sample. */
@@ -23,8 +20,57 @@ export interface Stroke {
   points: Point[]
 }
 
-/** One handwritten instance of a glyph: an ordered list of strokes.
- *  (A full `Glyph` groups 3 of these plus metrics — added in §2.) */
+/** One handwritten instance of a glyph: an ordered list of strokes. */
 export interface Sample {
   strokes: Stroke[]
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Captured-glyph model (§2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The onboarding answer alphabet — the closed OUTPUT set (design §2 / D9).
+ *  Distinct from the open input-symbol set, which this change does not capture. */
+export const ANSWER_ALPHABET = [
+  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-',
+] as const
+export type AnswerGlyph = (typeof ANSWER_ALPHABET)[number]
+
+/** Samples captured per glyph (design D2 — exactly 3). */
+export const SAMPLES_PER_GLYPH = 3
+
+/** The capture guide a sample was drawn against, in capture-surface pixels.
+ *  Shared across all glyphs in a session so normalization preserves RELATIVE
+ *  sizes (a "." stays small, "-" stays mid-height, digits fill the body). */
+export interface CaptureFrame {
+  /** y of the writing baseline in capture pixels. */
+  baselineY: number
+  /** height of one em in capture pixels (the guide band height). */
+  emHeight: number
+}
+
+/**
+ * Placement metrics for a normalized glyph, in em units (1 em = the shared
+ * capture guide height). Coordinates in a normalized Sample are BASELINE-RELATIVE
+ * and y-DOWN (same axis as canvas — no flips at render time): y = 0 is the
+ * baseline, points above it are negative, descenders positive. Left edge is x = 0.
+ */
+export interface GlyphMetrics {
+  /** cursor advance to the next glyph (em) = ink width + right side bearing. */
+  advance: number
+  /** ink width (em). */
+  width: number
+  /** highest ink point relative to baseline (em, ≤ 0). */
+  top: number
+  /** lowest ink point relative to baseline (em, ≥ 0 for descenders). */
+  bottom: number
+}
+
+/** A captured glyph: its symbol, its (normalized) samples, and placement metrics.
+ *  `samples` holds SAMPLES_PER_GLYPH instances; pick-then-warp (D2) selects among
+ *  them at render time. */
+export interface Glyph {
+  symbol: string
+  samples: Sample[]
+  metrics: GlyphMetrics
 }

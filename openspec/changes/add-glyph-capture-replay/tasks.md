@@ -15,10 +15,10 @@
 
 ## 2. Glyph data model & storage
 
-- [ ] 2.1 Define the captured-glyph types: `Glyph { symbol, samples[3], metrics }`, `Sample { strokes[] }`, `Stroke { points[] }`, `Point { x, y, pressure, t }`
-- [ ] 2.2 Implement normalization to an em-box preserving aspect ratio, computing baseline + advance metrics
-- [ ] 2.3 Implement per-user local persistence (IndexedDB); load/save the library with no network access
-- [ ] 2.4 Verify a multi-stroke glyph round-trips through storage preserving stroke order and timing
+- [x] 2.1 Define the captured-glyph types: `Glyph { symbol, samples[3], metrics }`, `Sample { strokes[] }`, `Stroke { points[] }`, `Point { x, y, pressure, t }` — `src/glyph/types.ts` (+ `ANSWER_ALPHABET`, `SAMPLES_PER_GLYPH`, `CaptureFrame`, `GlyphMetrics`)
+- [x] 2.2 Implement normalization to an em-box preserving aspect ratio, computing baseline + advance metrics — `src/glyph/normalize.ts`; baseline-relative y-down coords, shared em height preserves relative sizes (dot small/low, dash mid — design Open Question resolved); tested in `normalize.test.ts`
+- [x] 2.3 Implement per-user local persistence (IndexedDB); load/save the library with no network access — `src/glyph/storage.ts`; dependency-free promisified wrapper, per-glyph records keyed `userId::symbol`, `userId` index for library load
+- [x] 2.4 Verify a multi-stroke glyph round-trips through storage preserving stroke order and timing — `storage.test.ts` (two-stroke "5" preserves stroke order + per-point x/y/pressure/t; also covers re-capture-replaces-one and per-user isolation). Test runner added: Vitest + fake-indexeddb (`npm test`)
 
 ## 3. Onboarding capture flow
 
