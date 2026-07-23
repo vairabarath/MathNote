@@ -166,8 +166,8 @@ export function CanvasAnswerLoop({ library }: { library: Library }) {
           Clear
         </button>
         <span style={{ color: 'var(--muted)', fontSize: 12 }}>
-          Supported now: <strong>single digits, spaced</strong> (e.g. <code>2 + 2 =</code>).
-          Multi-digit numbers are the next upgrade.
+          Supported now: <strong>digits with gaps between them</strong> (e.g. <code>1 1 + 1 1 =</code>).
+          Digits written <em>touching</em> aren’t read yet — that’s the next upgrade.
         </span>
       </div>
     </div>
