@@ -11,12 +11,13 @@ import { useEffect, useState, type CSSProperties } from 'react'
 import { OnboardingCapture } from './capture/OnboardingCapture'
 import { CaptureReview } from './capture/CaptureReview'
 import { MagicLoopDemo } from './demo/MagicLoopDemo'
+import { CanvasAnswerLoop } from './recognition/CanvasAnswerLoop'
 import { WarpSpike } from './spike/WarpSpike'
 import { SegmentationSpike } from './recognition/SegmentationSpike'
 import { getLibrary, clearLibrary } from './glyph/storage'
 import { isOnboardingComplete, type Library } from './glyph/library'
 
-type Route = 'home' | 'review' | 'spike' | 'segspike'
+type Route = 'home' | 'canvas' | 'review' | 'spike' | 'segspike'
 
 export function App() {
   const [library, setLibrary] = useState<Library | null>(null)
@@ -56,6 +57,15 @@ export function App() {
     return <OnboardingCapture onComplete={reload} />
   }
 
+  if (route === 'canvas') {
+    return (
+      <div>
+        <BackBar onBack={() => setRoute('home')} label="← home" />
+        <CanvasAnswerLoop library={library} />
+      </div>
+    )
+  }
+
   if (route === 'review') {
     return (
       <div>
@@ -67,6 +77,14 @@ export function App() {
 
   return (
     <div>
+      <div style={{ textAlign: 'center', marginBottom: 28 }}>
+        <button style={ctaBtn} onClick={() => setRoute('canvas')}>
+          ✍️ Handwrite math on the canvas
+        </button>
+        <div style={{ color: 'var(--muted)', fontSize: 13, marginTop: 6 }}>
+          Write <code>2 + 2 =</code> and the answer appears in your hand · or try the typed demo below
+        </div>
+      </div>
       <MagicLoopDemo library={library} onNeedCapture={() => setRoute('review')} />
       <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 32, flexWrap: 'wrap' }}>
         <button style={linkBtn} onClick={() => setRoute('review')}>
@@ -104,6 +122,16 @@ function BackBar({ onBack, label }: { onBack: () => void; label: string }) {
   )
 }
 
+const ctaBtn: CSSProperties = {
+  padding: '14px 28px',
+  fontSize: 17,
+  borderRadius: 10,
+  border: 'none',
+  background: 'var(--accent)',
+  color: '#fff',
+  cursor: 'pointer',
+  fontWeight: 600,
+}
 const linkBtn: CSSProperties = {
   background: 'none',
   border: 'none',

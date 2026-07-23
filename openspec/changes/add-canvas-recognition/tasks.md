@@ -20,24 +20,26 @@
 
 ## 2. Recognizer — Option 1 branch: single-digit + spaced, with a visible boundary (§1.7)
 
-- [ ] 2.1 Define the `Recognizer` interface: `(ink: Stroke[]) → RecognitionResult` where the result is EITHER a confident `Token[]` (`0–9`, `+ - × ÷`, `=`) OR an `unreadable` signal with a reason (e.g. touching multi-digit). The canvas loop/solver depend ONLY on this (Requirements R2); the classifier upgrade drops in behind it unchanged.
-- [ ] 2.2 Implement the template-match recognizer over the user's captured `0–9`: segment (§1) → match each glyph group to its nearest captured sample (shape distance). Free/offline/private. (The multi-digit classifier is the NAMED deferred upgrade — do NOT build it now.)
-- [ ] 2.3 Provide operator recognition (`+ - × ÷ =`) via small built-in geometric templates (e.g. `=` two horizontal strokes, `+` a crossing pair).
+- [x] 2.1 Define the `Recognizer` interface: `(ink: Stroke[]) → RecognitionResult` where the result is EITHER a confident `Token[]` (`0–9`, `+ - × ÷`, `=`) OR an `unreadable` signal with a reason (e.g. touching multi-digit). The canvas loop/solver depend ONLY on this (Requirements R2); the classifier upgrade drops in behind it unchanged. — `recognize.ts`: `RecognitionResult = {ok:true,tokens} | {ok:false,reason}`, `Recognizer` type.
+- [x] 2.2 Implement the template-match recognizer over the user's captured `0–9`: segment (§1) → match each glyph group to its nearest captured sample (shape distance). Free/offline/private. (The multi-digit classifier is the NAMED deferred upgrade — do NOT build it now.) — rasterize to a GRID bitmap (aspect-preserving) + `1 − dilated-IoU` distance, best-of-3 samples per digit; tested.
+- [x] 2.3 Provide operator recognition (`+ - × ÷ =`) via small built-in geometric templates (e.g. `=` two horizontal strokes, `+` a crossing pair). — `matchOperator`: `=` (two horizontals), `+` (horizontal×vertical), `-` (one horizontal). `× ÷` DEFERRED with multi-digit (an unhandled operator is refused, not misread); tested.
 - [ ] 2.4 Evaluate the recognizer on FRESH ink (own-variance, design D6) — not the capture samples it was built from; record accuracy. Own-variance failure is the trigger to escalate to the classifier upgrade.
-- [ ] 2.5 **REQUIRED — refuse, don't guess (visible-boundary seam):** detect an ink cluster that looks like touching/adjacent multi-digit (a group whose width ≫ a single glyph, or that matches no single template well) and return `unreadable` with "try spacing multi-digit numbers", rather than emitting a confident wrong token. A gorgeous wrong answer is worse than an honest "I can't read that yet." (Mirrors the deterministic-solve never-confidently-wrong rule at the INPUT end.)
-- [ ] 2.6 **REQUIRED — legible envelope:** make the supported input envelope (single-digit operands, spaced) visible to the user up front (hint/affordance), so the boundary is known, not discovered by getting a wrong answer.
+      → **Awaiting human draw-through.** Thresholds (`DIST_MAX=0.72`, `ASPECT_MAX=1.35`) are PROVISIONAL guesses — they can only be validated/calibrated on the user's real fresh ink. This is the key own-variance test; if template-match misreads or over-refuses your own digits, that's the escalation signal to the classifier.
+- [x] 2.5 **REQUIRED — refuse, don't guess (visible-boundary seam):** detect an ink cluster that looks like touching/adjacent multi-digit (a group whose width ≫ a single glyph, or that matches no single template well) and return `unreadable` with "try spacing multi-digit numbers", rather than emitting a confident wrong token. A gorgeous wrong answer is worse than an honest "I can't read that yet." (Mirrors the deterministic-solve never-confidently-wrong rule at the INPUT end.) — two refusal prongs: aspect (wide group = merged digits) + distance (no template matches well); tested.
+- [x] 2.6 **REQUIRED — legible envelope:** make the supported input envelope (single-digit operands, spaced) visible to the user up front (hint/affordance), so the boundary is known, not discovered by getting a wrong answer. — persistent hint in `CanvasAnswerLoop`: "Supported now: single digits, spaced (e.g. 2 + 2 =)."
 
 ## 3. Canvas answer loop
 
-- [ ] 3.1 Expression canvas: accept ongoing multi-glyph, multi-stroke ink for a full single-line expression (reuse the `CaptureSurface` capture path).
-- [ ] 3.2 Detect the `=` trigger (geometric: two roughly-horizontal parallel strokes) as the commit signal; no answer renders before `=`.
-- [ ] 3.3 On trigger: segment + recognize the ink left of the `=` (§2), then solve deterministically with math.js. No LLM computes the result.
-- [ ] 3.4 Render the answer inline immediately right of the `=`, on the expression's baseline, in the user's hand via the existing replay engine (arbitrary x/baseline).
-- [ ] 3.5 Enforce the D9 answer-alphabet gate inside the loop: a missing answer glyph routes to capture, never a font substitute (font fallback stays out-of-alphabet only).
-- [ ] 3.6 Surface recognition uncertainty: when segmentation/recognition is low-confidence, show what was read and allow correction rather than drawing a confidently-wrong answer (correctness over silent-wrong).
+- [x] 3.1 Expression canvas: accept ongoing multi-glyph, multi-stroke ink for a full single-line expression (reuse the `CaptureSurface` capture path). — `CanvasAnswerLoop.tsx` wraps `CaptureSurface` + an overlay canvas for the answer.
+- [x] 3.2 Detect the `=` trigger (geometric: two roughly-horizontal parallel strokes) as the commit signal; no answer renders before `=`. — `findTrailingEquals` (structural, independent of digit recognition so it fires even if a digit is unreadable); tested.
+- [x] 3.3 On trigger: segment + recognize the ink left of the `=` (§2), then solve deterministically with math.js. No LLM computes the result. — `recognizeExpression` LHS → `solve` (math.js).
+- [x] 3.4 Render the answer inline immediately right of the `=`, on the expression's baseline, in the user's hand via the existing replay engine (arbitrary x/baseline). — `resolveScene` translated to the `=` right-edge + LHS baseline, animated draw-in, in an accent colour (like the reference image).
+- [x] 3.5 Enforce the D9 answer-alphabet gate inside the loop: a missing answer glyph routes to capture, never a font substitute (font fallback stays out-of-alphabet only). — `scene.blockedMissing` → capture hint; no font substitution for answer glyphs.
+- [x] 3.6 Surface recognition uncertainty: when segmentation/recognition is low-confidence, show what was read and allow correction rather than drawing a confidently-wrong answer (correctness over silent-wrong). — `unreadable` → hint shown, NO answer drawn; Clear to retry.
 
 ## 4. Integration & acceptance
 
-- [ ] 4.1 Wire the canvas answer loop into the app (post-onboarding surface alongside the typed demo).
+- [x] 4.1 Wire the canvas answer loop into the app (post-onboarding surface alongside the typed demo). — primary "✍️ Handwrite math on the canvas" CTA on home + `canvas` route.
 - [ ] 4.2 Human acceptance draw-through on desktop (mouse) AND iPad Safari (Apple Pencil): write `2+2=` → `4` appears inline in the user's hand; repeat for the adversarial cases and on fresh (own-variance) ink. Gated on §0.1 being green.
-- [ ] 4.3 Confirm the recognizer is swappable: replacing the method (§2.2) requires no change to the loop or solver (interface check, Requirements R2).
+      → BUILT & READY. **Awaiting the human draw-through** — this is the real §2.4 own-variance test AND the acceptance: does it recognize YOUR spaced single-digit ink and draw the answer inline? And does touching multi-digit get refused (hint), never misread?
+- [x] 4.3 Confirm the recognizer is swappable: replacing the method (§2.2) requires no change to the loop or solver (interface check, Requirements R2). — the loop depends only on `recognizeExpression`/`RecognitionResult`; swapping the impl behind that type touches nothing else.
