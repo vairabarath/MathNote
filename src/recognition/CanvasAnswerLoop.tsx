@@ -23,7 +23,18 @@ const H = 300
 const FRAME: CaptureFrame = { baselineY: 200, emHeight: 120 }
 const ANSWER_COLOR = '#e07b39' // orange, like the reference image
 
-type Status = { kind: 'idle' } | { kind: 'hint'; text: string } | { kind: 'answer'; expr: string; result: string }
+interface Placement {
+  targetX: number
+  baselineY: number
+  emPx: number
+}
+type Status =
+  | { kind: 'idle' }
+  | { kind: 'hint'; text: string }
+  // recognized + solved, but NOT yet drawn — the user must confirm the reading
+  // first, so a misread is a "redo", never a confident wrong answer (design D8).
+  | { kind: 'pending'; expr: string; result: string; place: Placement }
+  | { kind: 'answer'; expr: string; result: string }
 
 export function CanvasAnswerLoop({ library }: { library: Library }) {
   const overlayRef = useRef<HTMLCanvasElement>(null)
@@ -128,8 +139,14 @@ export function CanvasAnswerLoop({ library }: { library: Library }) {
     const baselineY = bottoms[Math.floor(bottoms.length / 2)] || FRAME.baselineY
     const targetX = eqMaxX + emPx * 0.35
 
-    setStatus({ kind: 'answer', expr: exprStr, result: solved.result })
-    animateAnswer(solved.result, targetX, baselineY, emPx)
+    // Do NOT draw yet — surface the reading for confirmation first. Recognition
+    // is never 100%; committing silently risks a gorgeous wrong answer.
+    setStatus({ kind: 'pending', expr: exprStr, result: solved.result, place: { targetX, baselineY, emPx } })
+  }
+
+  function confirmDraw(expr: string, result: string, place: Placement) {
+    setStatus({ kind: 'answer', expr, result })
+    animateAnswer(result, place.targetX, place.baselineY, place.emPx)
   }
 
   return (
@@ -154,9 +171,27 @@ export function CanvasAnswerLoop({ library }: { library: Library }) {
         {status.kind === 'hint' && (
           <span style={{ color: '#9a4a12', fontSize: 14 }}>✎ {status.text}</span>
         )}
+        {status.kind === 'pending' && (
+          <div style={confirmBox}>
+            <span style={{ fontSize: 16 }}>
+              I read this as <strong style={{ fontSize: 18 }}>{spaced(status.expr)}</strong> — is that right?
+            </span>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                style={primaryBtn}
+                onClick={() => confirmDraw(status.expr, status.result, status.place)}
+              >
+                Yes — draw the answer
+              </button>
+              <button style={secondaryBtn} onClick={reset}>
+                No — let me redo
+              </button>
+            </div>
+          </div>
+        )}
         {status.kind === 'answer' && (
           <span style={{ color: 'var(--muted)', fontSize: 14 }}>
-            Read <code>{status.expr}</code> → <strong>{status.result}</strong>
+            Read <code>{spaced(status.expr)}</code> → <strong>{status.result}</strong>
           </span>
         )}
       </div>
@@ -174,6 +209,11 @@ export function CanvasAnswerLoop({ library }: { library: Library }) {
   )
 }
 
+/** Display an expression with spaces around each token, e.g. "7+3" → "7 + 3". */
+function spaced(expr: string): string {
+  return expr.split('').join(' ')
+}
+
 const secondaryBtn: CSSProperties = {
   padding: '8px 16px',
   fontSize: 14,
@@ -181,4 +221,23 @@ const secondaryBtn: CSSProperties = {
   border: '1px solid var(--line)',
   background: '#fff',
   cursor: 'pointer',
+}
+const primaryBtn: CSSProperties = {
+  padding: '8px 16px',
+  fontSize: 14,
+  borderRadius: 8,
+  border: 'none',
+  background: 'var(--accent)',
+  color: '#fff',
+  cursor: 'pointer',
+}
+const confirmBox: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 14,
+  flexWrap: 'wrap',
+  background: '#fbf6ee',
+  border: '1px solid #e8d9c2',
+  borderRadius: 10,
+  padding: '10px 14px',
 }

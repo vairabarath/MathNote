@@ -36,7 +36,7 @@
 - [x] 3.3 On trigger: segment + recognize the ink left of the `=` (§2), then solve deterministically with math.js. No LLM computes the result. — `recognizeExpression` LHS → `solve` (math.js).
 - [x] 3.4 Render the answer inline immediately right of the `=`, on the expression's baseline, in the user's hand via the existing replay engine (arbitrary x/baseline). — `resolveScene` translated to the `=` right-edge + LHS baseline, animated draw-in, in an accent colour (like the reference image).
 - [x] 3.5 Enforce the D9 answer-alphabet gate inside the loop: a missing answer glyph routes to capture, never a font substitute (font fallback stays out-of-alphabet only). — `scene.blockedMissing` → capture hint; no font substitution for answer glyphs.
-- [x] 3.6 Surface recognition uncertainty: when segmentation/recognition is low-confidence, show what was read and allow correction rather than drawing a confidently-wrong answer (correctness over silent-wrong). — `unreadable` → hint shown, NO answer drawn; Clear to retry.
+- [x] 3.6 Surface recognition uncertainty: when segmentation/recognition is low-confidence, show what was read and allow correction rather than drawing a confidently-wrong answer (correctness over silent-wrong). — TWO layers: (a) `unreadable` → hint, no answer; (b) CONFIRM-BEFORE-COMMIT (added 2026-07-23 after the `5`→`3` misread) — on `=`, the loop shows "I read this as 7 + 3 — is that right?" and draws the answer ONLY on confirm; a misread is a "redo", never a silently-drawn wrong answer. This closes the recognizer-independent correctness gap (a confident WRONG match, not just a no-match).
 
 ## 4. Integration & acceptance
 

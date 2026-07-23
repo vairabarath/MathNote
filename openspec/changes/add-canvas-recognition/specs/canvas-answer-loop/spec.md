@@ -37,6 +37,18 @@ Because the product's promise is correctness, a **gorgeously-rendered wrong answ
 - **WHEN** the written expression contains touching multi-digit the recognizer returns `unreadable` for
 - **THEN** the system shows the seam ("space out multi-digit numbers"), and does NOT draw a confidently-wrong answer in the user's hand
 
+### Requirement: The recognized reading is confirmed before the answer commits
+Because no recognizer is perfect — it can confidently misread one digit for a similar one (e.g. `5`→`3`) — the system SHALL surface the recognized expression to the user and SHALL draw the answer only once the reading is confirmed correct. A misread MUST be a correctable "redo", never a silently-committed wrong answer. (The refusal seam handles "matched nothing"; this handles "matched the wrong thing".)
+
+#### Scenario: A misread is caught before it becomes a wrong answer
+- **WHEN** the recognizer reads `7+5` as `7+3`
+- **THEN** the system shows "I read this as 7 + 3 — is that right?" and draws nothing
+- **AND** the user can reject it and redo, so no wrong answer is ever drawn in their hand
+
+#### Scenario: A correct reading proceeds to the answer
+- **WHEN** the recognized expression shown for confirmation is correct
+- **THEN** on confirmation the answer is drawn inline in the user's hand
+
 ### Requirement: The supported input envelope is legible to the user
 The system SHALL communicate the current supported envelope (single-digit operands, spaced) up front, so the boundary is known rather than discovered by getting a wrong answer.
 
